@@ -13,17 +13,17 @@ from google import genai # import the Google Generative AI library modern sdk
 # LOAD API KEY
 # =========================
 
-# This loads the .env file so Python can access your API key
+# This loads the .env file so Python can access the API key
 load_dotenv()
 
-# This creates a client object that talks to OpenAI
+# creating a client object that talks to OpenAI
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
-# This creates a ChromaDB client (vector database in memory)
+# now making a ChromaDB client (vector database in memory)
 chroma_client = chromadb.Client()
 
-# This creates a collection (like a table in a database)
+#  create a collection (like a table in a database)
 collection = chroma_client.get_or_create_collection(name="docs")
 
 
@@ -32,9 +32,6 @@ collection = chroma_client.get_or_create_collection(name="docs")
 # =========================
 
 def load_text(file_path):
-    """
-    Opens a text file and returns its full content as a string.
-    """
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
@@ -44,10 +41,9 @@ def load_text(file_path):
 # =========================
 
 def chunk_text(text, chunk_size=500):
-    """
-    Breaks large text into smaller pieces.
-    Why? Because LLMs and embeddings work better on smaller chunks.
-    """
+   
+    #Breaks large text into smaller pieces.
+    #cause LLMs and embeddings work better on smaller chunks.
     chunks = []
     for i in range(0, len(text), chunk_size):
         chunks.append(text[i:i+chunk_size])
@@ -59,14 +55,13 @@ def chunk_text(text, chunk_size=500):
 # =========================
 
 def embed_text(text):
-    """
-    Converts text to Gemini embedding using google.genai
-    """
+
+    #Converting text to Gemini embedding using google.genai
+    
     result = client.models.embed_content(
         model="gemini-embedding-001", # Updated to the current standard model
         contents=text
     )
-    # CHANGED: result.embeddings[0].values is the correct path for this SDK
     return result.embeddings[0].values
 
 
@@ -102,7 +97,7 @@ def ask_question(question):
     3. Send them to LLM as context
     """
 
-    # Convert question to vector
+    # Converting question to vector
     question_embedding = embed_text(question)
 
     # Search vector DB for most similar chunks
@@ -114,18 +109,16 @@ def ask_question(question):
     # Combine top results into context
     context = "\n".join(results["documents"][0])
 
-    # Prompt sent to LLM
+    # Prompt being sent to our LLM
     prompt = f"""
     Answer the question using ONLY the context below.
-
-    Context:
-    {context}
-
-    Question:
-    {question}
+Context:
+{context}
+Question:
+{question}
     """
 
-    # Send prompt to gemini
+    # Sending prompt to gemini
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite",
         contents=prompt
@@ -137,7 +130,7 @@ def ask_question(question):
 # MAIN PROGRAM
 # =========================
 
-if __name__ == "__main__":
+if __name__ == "__main__":      """ __name__ and __main__ are basically built in functions that check if main code is ran directly and only lets it run if so  """
 
     # Load document
     text = load_text("sample.txt")
