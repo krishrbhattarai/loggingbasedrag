@@ -1,12 +1,12 @@
 # =========================
 # RAG (Retrieval-Augmented Generation) Example with Google GenAI and ChromaDB by krishr.bhattarai
 # to-dos: make a dashboard/ UI to make the user experience better, make users able to upload documents themselves
-# like pdfs and the system be able to embedded them as well. make this scalable and practical. make a readme file and push to github. MAKE A PROJECT REPOORT FOR THIS PROJECT.
+# like pdfs and the system be able to embedded them as well. make this scalable and practical. MAKE A PROJECT REPOORT FOR THIS PROJECT.
 # =========================
 
 import logging
 import os
-# from urllib import response  # lets us work with environment variables, now removed because we switched to the modern Google GenAI SDK which has a different way of handling responses
+# from urllib import response  # lets us work with environment variables, but now removed because we switched to the modern Google GenAI SDK which has a different way of handling responses
 from dotenv import load_dotenv  # loads .env file
 import chromadb  # vector database
 from google import genai # import the Google Generative AI library modern sdk
@@ -16,22 +16,22 @@ import logging
 # LOAD API KEY
 # =========================
 
-# This loads the .env file so Python can access your API key
+# This loads the .env file so Python can access our API key
 load_dotenv()
 
-# This creates a client object that talks to OpenAI
+# This creates a client object that talks to genai
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
 # This creates a ChromaDB client (vector database in memory)
 chroma_client = chromadb.Client()
 
-# This creates a collection (like a table in a database)
+# This creates a collection like a table in a database
 collection = chroma_client.get_or_create_collection(name="docs")
 
 
 # =========================
-# FUNCTION: Load Text File
+# Load Text File
 # =========================
 
 def load_text(file_path):
@@ -41,18 +41,18 @@ def load_text(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
     
-# Set up logging
+#Set up logging
 logging.basicConfig(filename="rag_log.txt", level=logging.INFO, 
                     format="%(asctime)s - %(message)s")
 
 
 # =========================
-# FUNCTION: Split Text into Chunks
+# Split Text into Chunks
 # =========================
 
 def chunk_text(text, min_chunk_size=200, max_chunk_size=500):
     """
-    Breaks large text into chunks based on natural breaks (like paragraphs) but keeps them within a size range.
+    Breaks large text into chunks based on natural breaks (like paragraphs) but keeps them within the size range.
     """
     chunks = []
     current_chunk = ""
@@ -70,7 +70,7 @@ def chunk_text(text, min_chunk_size=200, max_chunk_size=500):
 
 
 # =========================
-# FUNCTION: Create Embedding
+# Create Embedding
 # =========================
 
 def embed_text(text):
@@ -81,7 +81,7 @@ def embed_text(text):
         model="gemini-embedding-001", # Updated to the current standard model
         contents=text
     )
-    # CHANGED: result.embeddings[0].values is the correct path for this SDK
+    # CHANGED => result.embeddings[0].values is the correct path for this SDK
     return result.embeddings[0].values
 
 
@@ -91,7 +91,7 @@ def embed_text(text):
 
 def store_chunks(chunks):
     """
-    For each chunk:
+    For each chunk, we do:
     1. Convert to embedding
     2. Store in ChromaDB
     """
@@ -119,7 +119,7 @@ def ask_question(question):
         n_results=5
     )
 
-    # Keyword embedding (simple keyword extraction)
+    # Keyword embedding i.e simply keyword extraction
     keywords = " ".join(question.split()[:5])
     keyword_embedding = embed_text(keywords)
 
@@ -156,12 +156,12 @@ def ask_question(question):
         combined_context += doc["documents"][0] + "\n\n"
 
      # Calculate top similarity score from results
-    top_score = combined_scores[top_ids[0]]  # assuming lower is better (distance metric)
+    top_score = combined_scores[top_ids[0]]  # assuming lower is better (keeping distance metric in mind)
     
      # Combine top results into context
     context = combined_context  # Use the combined context instead of just the vector results
     
-    # Define a confidence threshold (you can tweak this)
+    # Define a confidence threshold (we can tweak this later)
     confidence_threshold = 0.3  # Adjusted based on testing as correct question typically has a score around 0.3-0.4, while incorrect ones are often below 0.2  
     confidence_score = round(top_score, 3)
 
@@ -189,7 +189,7 @@ def ask_question(question):
         contents=prompt
     )
     answer = response.text
-    # Log the interaction
+    # Logging the interaction in our log txt file
     logging.info(f"Question: {question} | Confidence: {top_score} | Answer: {answer}")
     
     return answer
@@ -200,7 +200,7 @@ def ask_question(question):
 # MAIN PROGRAM
 # =========================
 
-if __name__ == "__main__":
+if __name__ == "__main__":   """ __name__ and __main__ are basically built in functions that check if main code is ran directly and only lets it run if so  """
 
     # Load document
     text = load_text("sample.txt")
